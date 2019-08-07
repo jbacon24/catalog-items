@@ -1,9 +1,19 @@
 To run this final project
 
-1. Navigate to the catalog directory inside the vagrant environment
+#Clone
+1. `git clone this repo` into terminal
 
-2. run database_setup.py to create the database
+#Vagrant
+1. Open terminal
+2. Run `vagrant up` in terminal
+3. Run `vagrant ssh` in terminal
+4. Next `cd /vagrant`
 
-3. run alltheitems.py to populate the database
+#Inside the vagrant environment
+1. `cd catalog-items`
 
-4. run finalflask.py and navigate to localhost:5000 in your browser
+2. run `python database_setup.py` to create the database
+
+3. run `python alltheitems.py` to populate the database
+
+4. run `python finalflask.py` and navigate to localhost:5000 in your browser
