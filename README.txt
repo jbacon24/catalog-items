@@ -1,16 +1,16 @@
 To run this final project
 
-## Clone
-
-1. Open terminal
-2. `git clone https://github.com/jbacon24/catalog-items.git` into terminal
-
 ## Vagrant
 ### In terminal run the following commands:
 
 1. Run `vagrant up` in terminal
 2. Run `vagrant ssh` in terminal
 3. Next `cd /vagrant`
+
+## Clone
+
+1. Open terminal
+2. `git clone https://github.com/jbacon24/catalog-items.git` into terminal
 
 ## Inside the vagrant environment
 
