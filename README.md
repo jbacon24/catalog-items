@@ -1,4 +1,4 @@
-To run this final project
+## To run the Beauty Items Application execute the following steps:
 
 ## Vagrant
 ### In terminal run the following commands:
