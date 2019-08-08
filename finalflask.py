@@ -227,7 +227,7 @@ def deleteProduct(beauty_id):
         session.delete(productToDelete)
         session.commit()
         return redirect(
-            url_for('showItem', beauty_id=beauty_id))
+            url_for('showProducts', beauty_id=beauty_id))
     else:
         return render_template(
             'deleteProduct.html', product=productToDelete)

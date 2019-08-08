@@ -19,4 +19,4 @@
 3. run `python alltheitems.py` to populate the database
 4. run `export FLASK_ENV=development` to set the environment 
 5. run `python finalflask.py`
-6. Navigate to `localhost:5000` in your browser
+6. Navigate to `localhost:8000` in your browser
