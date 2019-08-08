@@ -6,8 +6,6 @@ from database_setup import Base, Beauty, BeautyItem
 from flask import session as login_session
 import random
 import string
-
-# IMPORTS FOR THIS STEP
 from oauth2client.client import flow_from_clientsecrets
 from oauth2client.client import FlowExchangeError
 import httplib2
@@ -30,7 +28,6 @@ Base.metadata.bind = engine
 DBSession = sessionmaker(bind=engine)
 session = DBSession()
 
-#login works
 # Create anti-forgery state token
 @app.route('/login')
 def showLogin():
@@ -124,6 +121,7 @@ def gconnect():
     print("done!")
     return output
 
+# Disconnect user from session
 @app.route('/gdisconnect')
 def gdisconnect():
     access_token = login_session.get('access_token')
@@ -155,7 +153,7 @@ def gdisconnect():
         return response
 
 
-#this works
+# Display a product in JSON format
 @app.route('/product/<int:beauty_id>/item/JSON')
 def beautyProductsJSON(beauty_id):
     DBSession = sessionmaker(bind=engine)
@@ -164,7 +162,7 @@ def beautyProductsJSON(beauty_id):
     items = session.query(BeautyItem).filter_by(beauty_id=beauty_id).all()
     return jsonify(BeautyItems=[i.serialize for i in items])
 
-#this works
+# Display beauty item in JSON format
 @app.route('/product/<int:beauty_id>/item/<int:item_id>/JSON')
 def beautyItemJSON(beauty_id, item_id):
     DBSession = sessionmaker(bind=engine)
@@ -172,7 +170,7 @@ def beautyItemJSON(beauty_id, item_id):
     Beauty_Item = session.query(BeautyItem).filter_by(id=item_id).one()
     return jsonify(Beauty_Item=Beauty_Item.serialize)
 
-#this works
+# Display all products in JSON format
 @app.route('/product/JSON')
 def productsJSON():
     DBSession = sessionmaker(bind=engine)
@@ -181,8 +179,7 @@ def productsJSON():
     return jsonify(beauty=[r.serialize for r in beauty])
 
 
-#this is not listing all the products - needs fix
-# Show all products
+# Show all products on homepage of app
 @app.route('/')
 @app.route('/product/')
 def showProducts():
@@ -191,7 +188,6 @@ def showProducts():
     products = session.query(Beauty).order_by(asc(Beauty.name))
     return render_template('products.html', products=products)
 
-#this works
 # Create a new product
 @app.route('/product/new/', methods=['GET', 'POST'])
 def newProduct():
@@ -204,11 +200,8 @@ def newProduct():
         return redirect(url_for('showProducts'))
     else:
         return render_template('newProduct.html')
-    # return "This page will be for making a new product"
 
 # Edit a product
-
-#doesnt work - beauty is undefined?
 @app.route('/product/<int:beauty_id>/edit/', methods=['GET', 'POST'])
 def editProduct(beauty_id):
     DBSession = sessionmaker(bind=engine)
@@ -223,11 +216,7 @@ def editProduct(beauty_id):
         return render_template(
             'editProduct.html', product=editedProduct)
 
-    # return 'This page will be for editing product %s' % beauty_id
-
 # Delete a product
-
-#this works
 @app.route('/product/<int:beauty_id>/delete/', methods=['GET', 'POST'])
 def deleteProduct(beauty_id):
     DBSession = sessionmaker(bind=engine)
@@ -242,10 +231,8 @@ def deleteProduct(beauty_id):
     else:
         return render_template(
             'deleteProduct.html', product=productToDelete)
-    # return 'This page will be for deleting product %s' % beauty_id
 
-#this works
-# Show a product menu
+# Show a beauty item
 @app.route('/product/<int:beauty_id>/')
 @app.route('/product/<int:beauty_id>/item/')
 def showItem(beauty_id):
@@ -255,11 +242,8 @@ def showItem(beauty_id):
     items = session.query(BeautyItem).filter_by(
         beauty_id=beauty_id).all()
     return render_template('item.html', items=items, beauty=beauty)
-    # return 'This page is the menu for product %s' % beauty_id
 
 # Create a new beauty item
-
-#this works
 @app.route(
     '/product/<int:beauty_id>/item/new/', methods=['GET', 'POST'])
 def newBeautyItem(beauty_id):
@@ -276,8 +260,6 @@ def newBeautyItem(beauty_id):
         return render_template('newbeautyitem.html', beauty_id=beauty_id)
 
 # Edit a beauty item
-
-#this works
 @app.route('/product/<int:beauty_id>/item/<int:item_id>/edit',
            methods=['GET', 'POST'])
 def editBeautyItem(beauty_id, item_id):
@@ -301,11 +283,7 @@ def editBeautyItem(beauty_id, item_id):
         return render_template(
             'editbeautyitem.html', beauty_id=beauty_id, item_id=item_id, item=editedItem)
 
-    # return 'This page is for editing beauty item %s' % item_id
-
 # Delete a beauty item
-
-#this works
 @app.route('/product/<int:beauty_id>/item/<int:item_id>/delete',
            methods=['GET', 'POST'])
 def deleteBeautyItem(beauty_id, item_id):
@@ -318,10 +296,9 @@ def deleteBeautyItem(beauty_id, item_id):
         return redirect(url_for('showItem', beauty_id=beauty_id))
     else:
         return render_template('deleteBeautyItem.html', item=itemToDelete)
-    # return "This page is for deleting beauty item %s" % item_id
 
 
 if __name__ == '__main__':
   app.secret_key = 'super_secret_key'
   app.debug = True
-  app.run(host = '0.0.0.0', port = 5000)
+  app.run(host = '0.0.0.0', port = 8000)
