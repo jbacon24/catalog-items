@@ -8,6 +8,7 @@ from sqlalchemy import create_engine
 
 Base = declarative_base()
 
+# Table definition
 class Beauty(Base):
     __tablename__ = 'beauty'
     name = Column(String(80), nullable = False)
@@ -21,6 +22,7 @@ class Beauty(Base):
            'id'           : self.id,
        }
 
+# Item defintions
 class BeautyItem(Base):
     __tablename__ = 'beauty_item'
     name = Column(String(80), nullable = False)
