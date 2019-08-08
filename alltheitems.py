@@ -1,6 +1,5 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-
 from database_setup import Beauty, Base, BeautyItem
 
 engine = create_engine('sqlite:///beautyitems.db')
@@ -10,7 +9,7 @@ DBSession = sessionmaker(bind=engine)
 session = DBSession()
 
 
-# Menu for UrbanBurger
+# Items for Makeup
 product1 = Beauty(name="Makeup")
 
 session.add(product1)
@@ -72,7 +71,7 @@ session.add(beautyItem9)
 session.commit()
 
 
-# Menu for Super Stir Fry
+# Items for Skincare
 product2 = Beauty(name="Skincare")
 
 session.add(product2)
@@ -110,7 +109,7 @@ session.add(beautyItem5)
 session.commit()
 
 
-# Menu for Panda Garden
+# Items for Haircare
 product3 = Beauty(name="Haircare")
 
 session.add(product3)
@@ -142,7 +141,7 @@ session.add(beautyItem4)
 session.commit()
 
 
-# Menu for Thyme for that
+# Items for Bath&Body
 product4 = Beauty(name="Bath&Body")
 
 session.add(product4)
