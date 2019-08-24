@@ -1,6 +1,6 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from database_setup import Beauty, Base, BeautyItem
+from database_setup import Beauty, Base, BeautyItem, User
 
 engine = create_engine('sqlite:///beautyitems.db')
 Base.metadata.bind = engine
@@ -8,6 +8,11 @@ Base.metadata.bind = engine
 DBSession = sessionmaker(bind=engine)
 session = DBSession()
 
+# Create dummy user
+User1 = User(username="Robo Barista", email="tinnyTim@udacity.com",
+             picture='https://pbs.twimg.com/profile_images/2671170543/18debd694829ed78203a5a36dd364160_400x400.png')
+session.add(User1)
+session.commit()
 
 # Items for Makeup
 product1 = Beauty(user_id=1, name="Makeup")
