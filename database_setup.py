@@ -17,12 +17,14 @@ secret_key = ''.join(random.choice(string.ascii_uppercase + string.digits) for x
 class User(Base):
     __tablename__ = 'user'
     id = Column(Integer, primary_key=True)
-    username = Column(String(250), nullable=False, index=True)
+    username = Column(String(250), nullable=False)
     email = Column(String(250), nullable=False)
     picture = Column(String(250))
+    password_hash = Column(String(64))
 
     def hash_password(self, password):
         self.password_hash = pwd_context.encrypt(password)
+        #maybe change to .hash  ??
 
     def verify_password(self, password):
         return pwd_context.verify(password, self.password_hash)

@@ -1,7 +1,7 @@
 
 from flask import Flask, render_template, request, redirect, jsonify, url_for, flash, abort, g
 from sqlalchemy import create_engine, asc
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, relationship
 from database_setup import Base, Beauty, BeautyItem, User
 from flask import session as login_session
 import random
@@ -273,6 +273,13 @@ def gconnect():
     login_session['username'] = data['name']
     login_session['picture'] = data['picture']
     login_session['email'] = data['email']
+
+
+    # see if user exists, if it doesn't make a new one
+    user_id = getUserID(login_session['email'])
+    if not user_id:
+        user_id = createUser(login_session)
+    login_session['user_id'] = user_id
 
     output = ''
     output += '<h1>Welcome, '
