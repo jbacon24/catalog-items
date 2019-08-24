@@ -8,7 +8,7 @@
   </script>
 
 <script src="https://apis.google.com/js/platform.js?onload=start"> </script>
-<meta name="google-signin-client_id" content="942632179013-tbquctg6vd5v0pbpib0iorm2cq427uu5.apps.googleusercontent.com "/>
+<meta name="google-signin-client_id" content="942632179013-tbquctg6vd5v0pbpib0iorm2cq427uu5.apps.googleusercontent.com"/>
 
 <script>
     gapi.load('auth2', function() {
@@ -47,14 +47,12 @@
 
  
   
-<button  class="g-signin2" id="signinButton">Sign in with Google</button>
+<button class="g-signin2" id="signinButton">Sign in with Google</button>
 <!-- Add where you want your sign-in button to render -->
 <!-- Use an image that follows the branding guidelines in a real app -->
-
 <script>
   $('#signinButton').click(function() {
     
-        
     auth2.grantOfflineAccess({'redirect_uri': 'postmessage'}).then(signInCallback);
   });
 </script>
@@ -69,7 +67,7 @@
 function signInCallback(json) {
   console.log('inside callback fuction');
   console.log(json);
-  // authResult = JSON.parse(json);
+//   authResult = JSON.parse(json);
   authResult = json;
   if (authResult['code']) {
     // Hide the sign-in button now that the user is authorized, for example:
@@ -98,8 +96,8 @@ function signInCallback(json) {
 </script>
 
 
-<!-- <a href='#' onclick="signOut();">Sign Out from Google </a>
-<script>
+<!-- <a href='#' onclick="signOut();">Sign Out from Google </a> -->
+<!-- <script>
     var auth2;
     gapi.load('auth2', function() {
         auth2 = gapi.auth2.init();
@@ -111,8 +109,8 @@ function signInCallback(json) {
         console.log('Name:', profile.getName());
         console.log('Image URL:', profile.getImageUrl());
         console.log('Email:', profile.getEmail());
-    } </script>
-<script>
+    } </script> -->
+<!-- <script>
     function signOut() {
         auth2.signOut().then(function() {
             console.log('User signed out.');

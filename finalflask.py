@@ -1,5 +1,5 @@
 
-from flask import Flask, render_template, request, redirect, jsonify, url_for, flash, abort
+from flask import Flask, render_template, request, redirect, jsonify, url_for, flash, abort, g
 from sqlalchemy import create_engine, asc
 from sqlalchemy.orm import sessionmaker
 from database_setup import Base, Beauty, BeautyItem, User
@@ -13,6 +13,7 @@ import json
 from flask import make_response
 import requests
 from flask_httpauth import HTTPBasicAuth
+
 
 app = Flask(__name__)
 
@@ -48,12 +49,12 @@ def verify_password(username_or_token, password):
 
 @app.route('/clientOAuth')
 def start():
-    DBSession = sessionmaker(bind=engine)
-    session = DBSession()
+    # DBSession = sessionmaker(bind=engine)
+    # session = DBSession()
     return render_template('clientOAuth.html')
 
 @app.route('/oauth/<provider>', methods = ['POST'])
-def login(provider):
+def login_required(provider):
     DBSession = sessionmaker(bind=engine)
     session = DBSession()
     #STEP 1 - Parse the auth code
@@ -82,24 +83,24 @@ def login(provider):
             response.headers['Content-Type'] = 'application/json'
             
         # # Verify that the access token is used for the intended user.
-        # gplus_id = credentials.id_token['sub']
-        # if result['user_id'] != gplus_id:
-        #     response = make_response(json.dumps("Token's user ID doesn't match given user ID."), 401)
-        #     response.headers['Content-Type'] = 'application/json'
-        #     return response
+        gplus_id = credentials.id_token['sub']
+        if result['user_id'] != gplus_id:
+            response = make_response(json.dumps("Token's user ID doesn't match given user ID."), 401)
+            response.headers['Content-Type'] = 'application/json'
+            return response
 
-        # # Verify that the access token is valid for this app.
-        # if result['issued_to'] != CLIENT_ID:
-        #     response = make_response(json.dumps("Token's client ID does not match app's."), 401)
-        #     response.headers['Content-Type'] = 'application/json'
-        #     return response
+        # Verify that the access token is valid for this app.
+        if result['issued_to'] != CLIENT_ID:
+            response = make_response(json.dumps("Token's client ID does not match app's."), 401)
+            response.headers['Content-Type'] = 'application/json'
+            return response
 
-        # stored_credentials = login_session.get('credentials')
-        # stored_gplus_id = login_session.get('gplus_id')
-        # if stored_credentials is not None and gplus_id == stored_gplus_id:
-        #     response = make_response(json.dumps('Current user is already connected.'), 200)
-        #     response.headers['Content-Type'] = 'application/json'
-        #     return response
+        stored_credentials = login_session.get('credentials')
+        stored_gplus_id = login_session.get('gplus_id')
+        if stored_credentials is not None and gplus_id == stored_gplus_id:
+            response = make_response(json.dumps('Current user is already connected.'), 200)
+            response.headers['Content-Type'] = 'application/json'
+            return response
         print("Step 2 Complete! Access Token : %s ") % credentials.access_token
 
         #STEP 3 - Find User or make a new one
@@ -113,7 +114,7 @@ def login(provider):
         data = answer.json()
 
         name = data['name']
-        picture = data['picture']
+        # picture = data['picture']
         email = data['email']
         
         
@@ -121,7 +122,7 @@ def login(provider):
         #see if user exists, if it doesn't make a new one
         user = session.query(User).filter_by(email=email).first()
         if not user:
-            user = User(username = name, picture = picture, email = email)
+            user = User(username = name, email = email)
             session.add(user)
             session.commit()
 
@@ -285,26 +286,26 @@ def gconnect():
     return output
 
 
-# def createUser(login_session):
-#     newUser = User(name=login_session['username'], email=login_session[
-#                    'email'], picture=login_session['picture'])
-#     session.add(newUser)
-#     session.commit()
-#     user = session.query(User).filter_by(email=login_session['email']).one()
-#     return user.id
+def createUser(login_session):
+    newUser = User(name=login_session['username'], email=login_session[
+                   'email'], picture=login_session['picture'])
+    session.add(newUser)
+    session.commit()
+    user = session.query(User).filter_by(email=login_session['email']).one()
+    return user.id
 
 
-# def getUserInfo(user_id):
-#     user = session.query(User).filter_by(id=user_id).one()
-#     return user
+def getUserInfo(user_id):
+    user = session.query(User).filter_by(id=user_id).one()
+    return user
 
 
-# def getUserID(email):
-#     try:
-#         user = session.query(User).filter_by(email=email).one()
-#         return user.id
-#     except:
-#         return None
+def getUserID(email):
+    try:
+        user = session.query(User).filter_by(email=email).one()
+        return user.id
+    except:
+        return None
 
     # DISCONNECT - Revoke a current user's token and reset their login_session
 
@@ -371,6 +372,7 @@ def productsJSON():
 # Show all products on homepage of app
 @app.route('/')
 @app.route('/product/')
+@auth.login_required
 def showProducts():
     DBSession = sessionmaker(bind=engine)
     session = DBSession()
@@ -379,11 +381,14 @@ def showProducts():
 
 # Create a new product
 @app.route('/product/new/', methods=['GET', 'POST'])
+@auth.login_required
 def newProduct():
     DBSession = sessionmaker(bind=engine)
     session = DBSession()
+    if 'username' not in login_session:
+        return redirect('/login')
     if request.method == 'POST':
-        newProduct = Beauty(name=request.form['name'])
+        newProduct = Beauty(name=request.form['name'], user_id=login_session['user_id'])
         session.add(newProduct)
         session.commit()
         return redirect(url_for('showProducts'))
@@ -392,9 +397,12 @@ def newProduct():
 
 # Edit a product
 @app.route('/product/<int:beauty_id>/edit/', methods=['GET', 'POST'])
+@auth.login_required
 def editProduct(beauty_id):
     DBSession = sessionmaker(bind=engine)
     session = DBSession()
+    if 'username' not in login_session:
+        return redirect('/login')
     editedProduct = session.query(
         Beauty).filter_by(id=beauty_id).one()
     if request.method == 'POST':
@@ -407,9 +415,12 @@ def editProduct(beauty_id):
 
 # Delete a product
 @app.route('/product/<int:beauty_id>/delete/', methods=['GET', 'POST'])
+@auth.login_required
 def deleteProduct(beauty_id):
     DBSession = sessionmaker(bind=engine)
     session = DBSession()
+    if 'username' not in login_session:
+        return redirect('/login')
     productToDelete = session.query(
         Beauty).filter_by(id=beauty_id).one()
     if request.method == 'POST':
@@ -424,6 +435,7 @@ def deleteProduct(beauty_id):
 # Show a beauty item
 @app.route('/product/<int:beauty_id>/')
 @app.route('/product/<int:beauty_id>/item/')
+@auth.login_required
 def showItem(beauty_id):
     DBSession = sessionmaker(bind=engine)
     session = DBSession()
@@ -435,12 +447,16 @@ def showItem(beauty_id):
 # Create a new beauty item
 @app.route(
     '/product/<int:beauty_id>/item/new/', methods=['GET', 'POST'])
+@auth.login_required
 def newBeautyItem(beauty_id):
     DBSession = sessionmaker(bind=engine)
     session = DBSession()
+    if 'username' not in login_session:
+        return redirect('/login')
+    product = session.query(Beauty).filter_by(id=beauty_id).one()
     if request.method == 'POST':
         newItem = BeautyItem(name=request.form['name'], description=request.form[
-                           'description'], price=request.form['price'], feature=request.form['feature'], beauty_id=beauty_id)
+                           'description'], price=request.form['price'], feature=request.form['feature'], beauty_id=beauty_id, user_id=beauty.user_id)
         session.add(newItem)
         session.commit()
 
@@ -451,7 +467,12 @@ def newBeautyItem(beauty_id):
 # Edit a beauty item
 @app.route('/product/<int:beauty_id>/item/<int:item_id>/edit',
            methods=['GET', 'POST'])
+@auth.login_required
 def editBeautyItem(beauty_id, item_id):
+    if 'username' not in login_session:
+        return redirect('/login')
+    editedItem = session.query(BeautyItem).filter_by(id=item_id).one()
+    product = session.query(Beauty).filter_by(id=beauty_id).one()
     DBSession = sessionmaker(bind=engine)
     session = DBSession()
     editedItem = session.query(BeautyItem).filter_by(id=item_id).one()
@@ -475,9 +496,13 @@ def editBeautyItem(beauty_id, item_id):
 # Delete a beauty item
 @app.route('/product/<int:beauty_id>/item/<int:item_id>/delete',
            methods=['GET', 'POST'])
+@auth.login_required
 def deleteBeautyItem(beauty_id, item_id):
     DBSession = sessionmaker(bind=engine)
     session = DBSession()
+    if 'username' not in login_session:
+        return redirect('/login')
+    product = session.query(Beauty).filter_by(id=beauty_id).one()
     itemToDelete = session.query(BeautyItem).filter_by(id=item_id).one()
     if request.method == 'POST':
         session.delete(itemToDelete)
@@ -489,6 +514,6 @@ def deleteBeautyItem(beauty_id, item_id):
 
 if __name__ == '__main__':
   app.secret_key = 'super_secret_key'
-  #app.config['SECRET_KEY'] = ''.join(random.choice(string.ascii_uppercase + string.digits) for x in xrange(32))
+#   app.config['SECRET_KEY'] = ''.join(random.choice(string.ascii_uppercase + string.digits) for x in xrange(32))
   app.debug = True
   app.run(host = '0.0.0.0', port = 8000)
